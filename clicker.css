@@ -1,0 +1,31 @@
+h1 {
+	text-align: center;
+}
+
+#breadImageDiv {
+	height: 300px;
+	width: 50%;
+	margin: auto;
+	text-align: center;
+}
+
+#breadImage {
+	margin: auto;
+	vertical-align: middle;
+}
+
+#buttonsAndText {
+	margin: auto;
+	width: 50%;
+	text-align: center;
+}
+
+button {
+	padding-left: 50px;
+	padding-right: 50px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border-radius: 10px;
+	display: block;
+	margin: auto;
+}

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<title>Bake Bread!</title>
+<link rel="stylesheet" type="text/css" href="clicker.css">
+<body>
+<h1>Bake Bread!</h1>
+<div id="breadImageDiv">
+	<img id="breadImage" src="images\bread.jpg" alt="bread pic"  height="300" width="300" onclick="breadClick()"> 
+</div>
+
+<div id="buttonsAndText">
+	<p id="breadPerClick">Click the bread to make 1 loaf!</p>
+	<p id="loafCounter">Loaves baked = 0</p>
+	<p id="loavesPerSecond">Loaves per second = 0</p>
+	
+	<button id="upgradeBread" onClick="upgradeBread()" style="background-color:#CCCCCC">Upgrade for 10 loaves!</button>
+	<button id="upgradeAuto" onClick="upgradeAuto()" style="background-color:#CCCCCC;">Upgrade Auto-Bake for 100 loaves!</button>
+</div>
+
+<script>
+var first = 1
+var loavesBaked = 0
+var upgradeClickCount = 0
+var clickAmount = 1
+var upgradeClickCost = 10
+var upgradeClickCostScale = 0.9
+
+var autoLoaf = 0
+var autoTimeout = 1000
+var upgradeAutoCount = 0
+var upgradeAutoCost = 100
+var upgradeAutoCostScale = 1.2
+
+var breadPerClickString1 = "Click the bread to make "
+var breadPerClickString2 = " loaf!"
+var breadPerClickString3 = " loaves!"
+var loavesBakedString = "Loaves baked = "
+var upgradeClickString1 = "Upgrade for "
+var upgradeClickString2 = " loaves"
+var upgradeAutoString1 = "Upgrade Auto-Bake for "
+var upgradeAutoString2 = " loaves"
+var loavesPerSecondString1 = "Loaves per second = "
+
+var shrinkAmt = 5
+var shrinkDelay = 50
+
+var breadNormalSize = document.getElementById("breadImage").height
+var breadShrinkSize = document.getElementById("breadImage").height - shrinkAmt
+
+function convertToDisp(num) {
+	var numCopy = num
+	var count = 0
+	while (numCopy > 10) {
+		numCopy /= 10
+		count++
+	}
+	if (count > 2) {
+		var countCopy = count
+		var newCount = 0
+		while (countCopy > 0) {
+			countCopy -= 3
+			newCount++
+		}		
+		var i
+		for (i=0; i < newCount; i++) {
+			num /= 100
+		}
+	}
+	num = Math.round(num)
+	var ret
+	switch (newCount) {
+		case 0:
+			ret = ""
+			break;
+			
+		case 1:
+			ret = " thousand"
+			break;
+			
+		case 2:
+			ret = " million"
+			break;
+			
+		case 3:
+			ret = " billion"
+			break;
+			
+		case 4:
+			ret = " trillion"
+			break;
+			
+		case 5:
+			ret = " quadrillion"
+			break;
+			
+		case 6:
+			ret = " quintillion"
+			break;
+			
+		case 7:
+			ret = " sextillion"
+			break;
+			
+		case 8:
+			ret = " septillion"
+			break;
+			
+		case 9:
+			ret = " octillion"
+			break;
+			
+		case 10:
+			ret = " nonillion"
+			break;
+			
+		case 11:
+			ret = " decillion"
+			break;
+			
+		case 12:
+			ret = " undecillion"
+			break;
+			
+		case 13:
+			ret = " duodecillion"
+			break;
+			
+		case 14:
+			ret = " tredecillion"
+			break;
+			
+		case 15:
+			ret = " quattuordecillion"
+			break;
+			
+		case 16:
+			ret = " quindecillion"
+			break;
+			
+		case 17:
+			ret = " sexdecillion"
+			break;
+			
+		case 18:
+			ret = " septendecillion"
+			break;
+			
+		case 19:
+			ret = " octodecillion"
+			break;
+			
+		case 20:
+			ret = " novemdecillion"
+			break;
+			
+		case 21:
+			ret = " vigintillion	"
+			break;
+			
+		default:
+			ret = ""
+			break;
+	}
+	if (newCount > 0) {
+		return num/10 + ret
+	} else {
+		return num
+	}
+}
+
+function upgradeBread() {
+	if (loavesBaked >= upgradeClickCost) {
+		loavesBaked -= upgradeClickCost
+		upgradeClickCount++
+		upgradeClickCost = upgradeClickCount*upgradeClickCount*upgradeClickCount*upgradeClickCostScale + upgradeClickCount*upgradeClickCostScale + 10
+		clickAmount += upgradeClickCount*1.2
+		
+		updateDisplay()
+	}
+}
+
+function upgradeAuto() {
+	if (loavesBaked >= upgradeAutoCost) {
+		loavesBaked -= upgradeAutoCost
+		if (autoTimeout > 250) {
+			autoTimeout = autoTimeout - upgradeAutoCount
+		}
+		upgradeAutoCount++
+		autoLoaf++
+		upgradeAutoCost = upgradeAutoCount*upgradeAutoCount*upgradeAutoCount*upgradeAutoCostScale + (upgradeAutoCost*upgradeAutoCostScale) + 100
+		if (first == 1) {
+			autoBake()
+			first = 0
+		}
+		updateDisplay()
+	}
+}
+
+function autoBake() {
+	loavesBaked += clickAmount * autoLoaf
+	setTimeout(function() {autoBake()}, (autoTimeout))
+	updateDisplay()
+}
+
+function breadClick() {
+	document.getElementById("breadImage").height = breadShrinkSize
+	document.getElementById("breadImage").width = breadShrinkSize
+	
+	loavesBaked = Math.round(loavesBaked + clickAmount)
+	
+	updateDisplay()
+	
+	setTimeout(function(){
+		document.getElementById("breadImage").height = breadNormalSize
+		document.getElementById("breadImage").width = breadNormalSize
+	}, shrinkDelay);
+}
+
+function updateDisplay() {
+	if (loavesBaked >= upgradeAutoCost) {
+		document.getElementById("upgradeAuto").style.backgroundColor = "#FF7F00"
+	} else {
+		document.getElementById("upgradeAuto").style.backgroundColor = "#CCCCCC"
+	}
+	if (loavesBaked >= upgradeClickCost) {
+		document.getElementById("upgradeBread").style.backgroundColor = "#FF7F00"
+	} else {
+		document.getElementById("upgradeBread").style.backgroundColor = "#CCCCCC"
+	}
+	document.getElementById("breadPerClick").innerHTML = breadPerClickString1 + convertToDisp(Math.round(clickAmount)) + breadPerClickString3
+	document.getElementById("upgradeBread").innerHTML = upgradeClickString1 + convertToDisp(Math.round(upgradeClickCost)) + upgradeClickString2
+	document.getElementById("loafCounter").innerHTML = loavesBakedString + convertToDisp(Math.round(loavesBaked))
+	document.getElementById("loavesPerSecond").innerHTML = loavesPerSecondString1 + convertToDisp(Math.round(autoLoaf*clickAmount/autoTimeout*1000))
+	document.getElementById("upgradeAuto").innerHTML = upgradeAutoString1 + convertToDisp(Math.round(upgradeAutoCost)) + upgradeAutoString2
+}
+</script>
+</body>
+
+</html>
