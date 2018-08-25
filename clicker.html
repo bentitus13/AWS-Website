@@ -1,238 +1,322 @@
 <!DOCTYPE html>
 <html>
 <title>Bake Bread!</title>
-<link rel="stylesheet" type="text/css" href="clicker.css">
+<link rel="stylesheet" type="text/css" href="resources/css/clicker.css">
 <body>
 <h1>Bake Bread!</h1>
 <div id="breadImageDiv">
-	<img id="breadImage" src="images\bread.jpg" alt="bread pic"  height="300" width="300" onclick="breadClick()"> 
+    <img id="breadImage" src="resources/images/bread.jpg" alt="bread pic" height="300" width="300"
+         onclick="breadClick()">
 </div>
 
 <div id="buttonsAndText">
-	<p id="breadPerClick">Click the bread to make 1 loaf!</p>
-	<p id="loafCounter">Loaves baked = 0</p>
-	<p id="loavesPerSecond">Loaves per second = 0</p>
-	
-	<button id="upgradeBread" onClick="upgradeBread()" style="background-color:#CCCCCC">Upgrade for 10 loaves!</button>
-	<button id="upgradeAuto" onClick="upgradeAuto()" style="background-color:#CCCCCC;">Upgrade Auto-Bake for 100 loaves!</button>
+    <p id="breadPerClick">Click the bread to make 1 loaf!</p>
+    <p id="loafCounter">Loaves baked = 0</p>
+    <p id="loavesPerSecond">Loaves per second = 0</p>
+
+    <button id="upgradeBread" onClick="upgradeBreadClick()" style="background-color:#CCCCCC">Upgrade for 10 loaves!
+    </button>
+    <button id="upgradeAuto" onClick="upgradeAuto()" style="background-color:#CCCCCC;">Upgrade Auto-Bake for 100
+        loaves!
+    </button>
 </div>
 
 <script>
-var first = 1
-var loavesBaked = 0
-var upgradeClickCount = 0
-var clickAmount = 1
-var upgradeClickCost = 10
-var upgradeClickCostScale = 0.9
+    document.addEventListener('DOMContentLoaded', init(), false);
 
-var autoLoaf = 0
-var autoTimeout = 1000
-var upgradeAutoCount = 0
-var upgradeAutoCost = 100
-var upgradeAutoCostScale = 1.2
+    var first;
+    var loavesBaked;
+    var breadClicker;
 
-var breadPerClickString1 = "Click the bread to make "
-var breadPerClickString2 = " loaf!"
-var breadPerClickString3 = " loaves!"
-var loavesBakedString = "Loaves baked = "
-var upgradeClickString1 = "Upgrade for "
-var upgradeClickString2 = " loaves"
-var upgradeAutoString1 = "Upgrade Auto-Bake for "
-var upgradeAutoString2 = " loaves"
-var loavesPerSecondString1 = "Loaves per second = "
+    var clickables;
 
-var shrinkAmt = 5
-var shrinkDelay = 50
+    var breadPerClickString1 = "Click the bread to make ";
+    var breadPerClickString2 = " loaf!";
+    var breadPerClickString3 = " loaves!";
+    var loavesBakedString = "Loaves baked = ";
+    var upgradeClickString1 = "Upgrade for ";
+    var upgradeClickString2 = " loaves";
+    var upgradeAutoString1 = "Upgrade Auto-Bake for ";
+    var upgradeAutoString2 = " loaves";
+    var loavesPerSecondString1 = "Loaves per second = ";
 
-var breadNormalSize = document.getElementById("breadImage").height
-var breadShrinkSize = document.getElementById("breadImage").height - shrinkAmt
+    var shrinkAmt = 5;
+    var shrinkDelay = 50;
 
-function convertToDisp(num) {
-	var numCopy = num
-	var count = 0
-	while (numCopy > 10) {
-		numCopy /= 10
-		count++
-	}
-	if (count > 2) {
-		var countCopy = count
-		var newCount = 0
-		while (countCopy > 0) {
-			countCopy -= 3
-			newCount++
-		}		
-		var i
-		for (i=0; i < newCount; i++) {
-			num /= 100
-		}
-	}
-	num = Math.round(num)
-	var ret
-	switch (newCount) {
-		case 0:
-			ret = ""
-			break;
-			
-		case 1:
-			ret = " thousand"
-			break;
-			
-		case 2:
-			ret = " million"
-			break;
-			
-		case 3:
-			ret = " billion"
-			break;
-			
-		case 4:
-			ret = " trillion"
-			break;
-			
-		case 5:
-			ret = " quadrillion"
-			break;
-			
-		case 6:
-			ret = " quintillion"
-			break;
-			
-		case 7:
-			ret = " sextillion"
-			break;
-			
-		case 8:
-			ret = " septillion"
-			break;
-			
-		case 9:
-			ret = " octillion"
-			break;
-			
-		case 10:
-			ret = " nonillion"
-			break;
-			
-		case 11:
-			ret = " decillion"
-			break;
-			
-		case 12:
-			ret = " undecillion"
-			break;
-			
-		case 13:
-			ret = " duodecillion"
-			break;
-			
-		case 14:
-			ret = " tredecillion"
-			break;
-			
-		case 15:
-			ret = " quattuordecillion"
-			break;
-			
-		case 16:
-			ret = " quindecillion"
-			break;
-			
-		case 17:
-			ret = " sexdecillion"
-			break;
-			
-		case 18:
-			ret = " septendecillion"
-			break;
-			
-		case 19:
-			ret = " octodecillion"
-			break;
-			
-		case 20:
-			ret = " novemdecillion"
-			break;
-			
-		case 21:
-			ret = " vigintillion	"
-			break;
-			
-		default:
-			ret = ""
-			break;
-	}
-	if (newCount > 0) {
-		return num/10 + ret
-	} else {
-		return num
-	}
-}
+    var breadNormalSize = document.getElementById("breadImage").height;
+    var breadShrinkSize = document.getElementById("breadImage").height - shrinkAmt;
 
-function upgradeBread() {
-	if (loavesBaked >= upgradeClickCost) {
-		loavesBaked -= upgradeClickCost
-		upgradeClickCount++
-		upgradeClickCost = upgradeClickCount*upgradeClickCount*upgradeClickCount*upgradeClickCostScale + upgradeClickCount*upgradeClickCostScale + 10
-		clickAmount += upgradeClickCount*1.2
-		
-		updateDisplay()
-	}
-}
+    function init() {
+        first = 1;
+        loavesBaked = 0;
+        breadPerClickString1 = "Click the bread to make ";
+        breadPerClickString2 = " loaf!";
+        breadPerClickString3 = " loaves!";
+        loavesBakedString = "Loaves baked = ";
+        upgradeClickString1 = "Upgrade for ";
+        upgradeClickString2 = " loaves";
+        upgradeAutoString1 = "Upgrade Auto-Bake for ";
+        upgradeAutoString2 = " loaves";
+        loavesPerSecondString1 = "Loaves per second = ";
+        breadClicker = new Clickable(1);
+        clickables = [breadClicker];
+        breadClicker.setElements("upgradeAuto", "upgradeBread", "breadPerClick", "loafCounter", "loavesPerSecond");
+        updateDisplay()
+    }
 
-function upgradeAuto() {
-	if (loavesBaked >= upgradeAutoCost) {
-		loavesBaked -= upgradeAutoCost
-		if (autoTimeout > 250) {
-			autoTimeout = autoTimeout - upgradeAutoCount
-		}
-		upgradeAutoCount++
-		autoLoaf++
-		upgradeAutoCost = upgradeAutoCount*upgradeAutoCount*upgradeAutoCount*upgradeAutoCostScale + (upgradeAutoCost*upgradeAutoCostScale) + 100
-		if (first == 1) {
-			autoBake()
-			first = 0
-		}
-		updateDisplay()
-	}
-}
+    function upgradeBreadClick() {
+        var tmp = breadClicker.upClick(loavesBaked);
+        console.log(tmp);
+        if (tmp >= 0) {
+            loavesBaked = tmp;
+        }
+        updateDisplay();
+    }
 
-function autoBake() {
-	loavesBaked += clickAmount * autoLoaf
-	setTimeout(function() {autoBake()}, (autoTimeout))
-	updateDisplay()
-}
+    function upgradeAuto() {
+        var tmp = breadClicker.upAuto(loavesBaked);
+        if (tmp >= 0) {
+            loavesBaked = tmp;
+            if (first == 1) {
+                autoBake();
+                first = 0
+            }
+        }
+        updateDisplay();
+    }
 
-function breadClick() {
-	document.getElementById("breadImage").height = breadShrinkSize
-	document.getElementById("breadImage").width = breadShrinkSize
-	
-	loavesBaked = Math.round(loavesBaked + clickAmount)
-	
-	updateDisplay()
-	
-	setTimeout(function(){
-		document.getElementById("breadImage").height = breadNormalSize
-		document.getElementById("breadImage").width = breadNormalSize
-	}, shrinkDelay);
-}
+    function autoBake() {
+        loavesBaked += breadClicker.autoClick();
+        setTimeout(function () {
+            autoBake()
+        }, (breadClicker.autoTimeout));
+        updateDisplay()
+    }
 
-function updateDisplay() {
-	if (loavesBaked >= upgradeAutoCost) {
-		document.getElementById("upgradeAuto").style.backgroundColor = "#FF7F00"
-	} else {
-		document.getElementById("upgradeAuto").style.backgroundColor = "#CCCCCC"
-	}
-	if (loavesBaked >= upgradeClickCost) {
-		document.getElementById("upgradeBread").style.backgroundColor = "#FF7F00"
-	} else {
-		document.getElementById("upgradeBread").style.backgroundColor = "#CCCCCC"
-	}
-	document.getElementById("breadPerClick").innerHTML = breadPerClickString1 + convertToDisp(Math.round(clickAmount)) + breadPerClickString3
-	document.getElementById("upgradeBread").innerHTML = upgradeClickString1 + convertToDisp(Math.round(upgradeClickCost)) + upgradeClickString2
-	document.getElementById("loafCounter").innerHTML = loavesBakedString + convertToDisp(Math.round(loavesBaked))
-	document.getElementById("loavesPerSecond").innerHTML = loavesPerSecondString1 + convertToDisp(Math.round(autoLoaf*clickAmount/autoTimeout*1000))
-	document.getElementById("upgradeAuto").innerHTML = upgradeAutoString1 + convertToDisp(Math.round(upgradeAutoCost)) + upgradeAutoString2
-}
+    function breadClick() {
+        document.getElementById("breadImage").height = breadShrinkSize;
+        document.getElementById("breadImage").width = breadShrinkSize;
+
+        loavesBaked += breadClicker.clicked();
+
+        updateDisplay();
+
+        setTimeout(function () {
+            document.getElementById("breadImage").height = breadNormalSize;
+            document.getElementById("breadImage").width = breadNormalSize;
+        }, shrinkDelay);
+    }
+
+    function updateDisplay() {
+        clickables.forEach(updateFields);
+    }
+
+    function updateFields(clickable, index) {
+        if (loavesBaked >= clickable.upAutoCost) {
+            document.getElementById(clickable.upAutoElement).style.backgroundColor = "#FF7F00"
+        } else {
+            document.getElementById(clickable.upAutoElement).style.backgroundColor = "#CCCCCC"
+        }
+        if (loavesBaked >= clickable.upClickCost) {
+            document.getElementById(clickable.upBreadElement).style.backgroundColor = "#FF7F00"
+        } else {
+            document.getElementById(clickable.upBreadElement).style.backgroundColor = "#CCCCCC"
+        }
+        var breadPerClickString = breadPerClickString1 + convertToDisp(Math.round(clickable.clickAmount));
+        if (clickable.clickAmount > 1) {
+             breadPerClickString += breadPerClickString3;
+        } else {
+            breadPerClickString += breadPerClickString2;
+        }
+        var upgradeBreadString = upgradeClickString1 + convertToDisp(Math.round(clickable.upClickCost)) + upgradeClickString2;
+        var loafCounterString = loavesBakedString + convertToDisp(Math.round(loavesBaked));
+        var loavesPerSecondString = loavesPerSecondString1 + convertToDisp(Math.round(clickable.autoLoaf * clickable.clickAmount / clickable.autoTimeout * 1000))
+        var upgradeAutoString = upgradeAutoString1 + convertToDisp(Math.round(clickable.upAutoCost)) + upgradeAutoString2;
+        document.getElementById(clickable.breadPerClickElement).innerHTML = breadPerClickString;
+        document.getElementById(clickable.upBreadElement).innerHTML = upgradeBreadString;
+        document.getElementById(clickable.loafCounterElement).innerHTML = loafCounterString;
+        document.getElementById(clickable.loavesPerSecondElement).innerHTML = loavesPerSecondString;
+        document.getElementById(clickable.upAutoElement).innerHTML = upgradeAutoString;
+    }
+
+    function Clickable(initialValue) {
+        this.initialValue = initialValue;
+        this.count = 0;
+        this.clickAmount = initialValue;
+        this.upCount = 0;
+        this.upClickCost = 10*this.initialValue;
+        this.upClickCostScale = 0.9;
+        this.upClickCount = 0;
+        this.autoLoaf = 0;
+        this.autoTimeout = Math.round(1000*Math.sqrt(this.initialValue));
+        this.upAutoCount = 0;
+        this.upAutoCost = 100*this.initialValue;
+        this.upAutoCostScale = 1.2;
+
+        this.setElements = function(upgradeAuto, upgradeBread, breadPerClick, loafCounter, loavesPerSecond) {
+            this.upAutoElement = upgradeAuto;
+            this.upBreadElement = upgradeBread;
+            this.breadPerClickElement = breadPerClick;
+            this.loafCounterElement = loafCounter;
+            this.loavesPerSecondElement = loavesPerSecond;
+        };
+
+        this.clicked = function() {
+            return this.clickAmount
+        };
+
+        this.autoClick = function() {
+            return this.clickAmount * this.autoLoaf;
+        };
+
+        this.upClick = function(loavesBaked) {
+            if (loavesBaked >= this.upClickCost) {
+                loavesBaked -= this.upClickCost;
+                this.upClickCount++;
+                this.upClickCost = Math.pow(this.upClickCount, 3)*this.upClickCostScale + this.upClickCount*this.upClickCostScale + 10;
+                this.clickAmount += this.upClickCount*1.2;
+                return loavesBaked;
+            }
+            return -1;
+        };
+
+        this.upAuto = function() {
+            if (loavesBaked >= this.upAutoCost) {
+                loavesBaked -= this.upAutoCost;
+                if (this.autoTimeout > 250) {
+                    this.autoTimeout = this.autoTimeout - this.upAutoCount
+                }
+                this.upAutoCount++;
+                this.autoLoaf++;
+                this.upAutoCost = Math.pow(this.upAutoCount,3)*this.upAutoCostScale + (this.upAutoCost*this.upAutoCostScale) + 100;
+                return loavesBaked;
+            }
+            return -1;
+        };
+
+
+    }
+
+    function convertToDisp(num) {
+        var numCopy = num;
+        var count = 0;
+        while (numCopy > 10) {
+            numCopy /= 10;
+            count++;
+        }
+        if (count > 2) {
+            var countCopy = count;
+            var newCount = 0;
+            while (countCopy > 0) {
+                countCopy -= 3;
+                newCount++;
+            }
+            var i;
+            for (i = 0; i < newCount; i++) {
+                num /= 100;
+            }
+        }
+        num = Math.round(num);
+        var ret;
+        switch (newCount) {
+            case 0:
+                ret = "";
+                break;
+
+            case 1:
+                ret = " thousand";
+                break;
+
+            case 2:
+                ret = " million";
+                break;
+
+            case 3:
+                ret = " billion";
+                break;
+
+            case 4:
+                ret = " trillion";
+                break;
+
+            case 5:
+                ret = " quadrillion";
+                break;
+
+            case 6:
+                ret = " quintillion";
+                break;
+
+            case 7:
+                ret = " sextillion";
+                break;
+
+            case 8:
+                ret = " septillion";
+                break;
+
+            case 9:
+                ret = " octillion";
+                break;
+
+            case 10:
+                ret = " nonillion";
+                break;
+
+            case 11:
+                ret = " decillion";
+                break;
+
+            case 12:
+                ret = " undecillion";
+                break;
+
+            case 13:
+                ret = " duodecillion";
+                break;
+
+            case 14:
+                ret = " tredecillion";
+                break;
+
+            case 15:
+                ret = " quattuordecillion";
+                break;
+
+            case 16:
+                ret = " quindecillion";
+                break;
+
+            case 17:
+                ret = " sexdecillion";
+                break;
+
+            case 18:
+                ret = " septendecillion";
+                break;
+
+            case 19:
+                ret = " octodecillion";
+                break;
+
+            case 20:
+                ret = " novemdecillion";
+                break;
+
+            case 21:
+                ret = " vigintillion	";
+                break;
+
+            default:
+                ret = "";
+                break;
+        }
+        if (newCount > 0) {
+            return num / 10 + ret;
+        } else {
+            return num;
+        }
+    }
 </script>
 </body>
 
